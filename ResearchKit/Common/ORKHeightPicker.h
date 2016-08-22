@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2015, Apple Inc. All rights reserved.
+ Copyright (c) 2016, Ricardo Sánchez-Sáez.
  
  Redistribution and use in source and binary forms, with or without modification,
  are permitted provided that the following conditions are met:
@@ -29,18 +29,13 @@
  */
 
 
-#import "ORKConsentSection.h"
+@import UIKit;
+#import <ResearchKit/ORKPicker.h>
 
 
 NS_ASSUME_NONNULL_BEGIN
 
-NSURL *ORKMovieURLForConsentSectionType(ORKConsentSectionType type);
-
-@interface ORKConsentSection ()
-
-@property (nonatomic, readonly, nullable) NSString *escapedContent;
-
-@property (nonatomic, readonly, nullable) UIImage *image;
+@interface ORKHeightPicker : NSObject <ORKPicker>
 
 @end
 

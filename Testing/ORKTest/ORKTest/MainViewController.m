@@ -33,12 +33,15 @@
 
 
 #import "MainViewController.h"
-#import <ResearchKit/ResearchKit_Private.h>
-#import <AVFoundation/AVFoundation.h>
-#import "DynamicTask.h"
+
 #import "AppDelegate.h"
+#import "DynamicTask.h"
 #import "ORKTest-Swift.h"
 #import "DragonPokerStep.h"
+
+@import ResearchKit;
+
+@import AVFoundation;
 
 
 #define DefineStringKey(x) static NSString *const x = @#x
@@ -57,6 +60,7 @@ DefineStringKey(ImageChoicesTaskIdentifier);
 DefineStringKey(InstantiateCustomVCTaskIdentifier);
 DefineStringKey(LocationTaskIdentifier);
 DefineStringKey(ScalesTaskIdentifier);
+DefineStringKey(ColorScalesTaskIdentifier);
 DefineStringKey(MiniFormTaskIdentifier);
 DefineStringKey(OptionalFormTaskIdentifier);
 DefineStringKey(SelectionSurveyTaskIdentifier);
@@ -338,6 +342,7 @@ static const CGFloat HeaderSideLayoutMargin = 16.0;
                            @"Image Choices",
                            @"Location",
                            @"Scale",
+                           @"Scale Color Gradient",
                            @"Mini Form",
                            @"Optional Form",
                            @"Selection Survey",
@@ -508,8 +513,8 @@ static const CGFloat HeaderSideLayoutMargin = 16.0;
                                                        minimumSpan:2
                                                        maximumSpan:15
                                                          playSpeed:1
-                                                          maxTests:5
-                                            maxConsecutiveFailures:3
+                                                      maximumTests:5
+                                        maximumConsecutiveFailures:3
                                                  customTargetImage:nil
                                             customTargetPluralName:nil
                                                    requireReversal:NO
@@ -520,6 +525,8 @@ static const CGFloat HeaderSideLayoutMargin = 16.0;
         return [self makeInterruptibleTask];
     } else if ([identifier isEqualToString:ScalesTaskIdentifier]) {
         return [self makeScalesTask];
+    } else if ([identifier isEqualToString:ColorScalesTaskIdentifier]) {
+        return [self makeColorScalesTask];
     } else if ([identifier isEqualToString:ImageChoicesTaskIdentifier]) {
         return [self makeImageChoicesTask];
     } else if ([identifier isEqualToString:ImageCaptureTaskIdentifier]) {
@@ -1724,7 +1731,28 @@ static const CGFloat HeaderSideLayoutMargin = 16.0;
             item.placeholder = @"Enter Passcode";
             [items addObject:item];
         }
-        
+
+        {
+            ORKFormItem *item = [[ORKFormItem alloc] initWithIdentifier:@"fqid_height_001" text:@"Height"
+                                                           answerFormat:[ORKAnswerFormat heightAnswerFormat]];
+            item.placeholder = @"Pick a height (local system)";
+            [items addObject:item];
+        }
+
+        {
+            ORKFormItem *item = [[ORKFormItem alloc] initWithIdentifier:@"fqid_height_002" text:@"Height"
+                                                           answerFormat:[ORKAnswerFormat heightAnswerFormatWithMeasurementSystem:ORKMeasurementSystemMetric]];
+            item.placeholder = @"Pick a height (metric system)";
+            [items addObject:item];
+        }
+
+        {
+            ORKFormItem *item = [[ORKFormItem alloc] initWithIdentifier:@"fqid_height_003" text:@"Height"
+                                                           answerFormat:[ORKAnswerFormat heightAnswerFormatWithMeasurementSystem:ORKMeasurementSystemUSC]];
+            item.placeholder = @"Pick a height (imperial system)";
+            [items addObject:item];
+        }
+
         {
             ORKFormItem *item = [[ORKFormItem alloc] initWithIdentifier:@"fqid_date_001" text:@"Birthdate"
                                                          answerFormat:[ORKAnswerFormat dateAnswerFormat]];
@@ -1733,7 +1761,6 @@ static const CGFloat HeaderSideLayoutMargin = 16.0;
         }
         
         {
-            
             NSDate *defaultDate = [[NSCalendar currentCalendar] dateByAddingUnit:NSCalendarUnitYear value:-30 toDate:[NSDate date] options:(NSCalendarOptions)0];
             NSDate *minDate = [[NSCalendar currentCalendar] dateByAddingUnit:NSCalendarUnitYear value:-150 toDate:[NSDate date] options:(NSCalendarOptions)0];
 
@@ -2654,6 +2681,30 @@ static const CGFloat HeaderSideLayoutMargin = 16.0;
     [self beginTaskWithIdentifier:ScalesTaskIdentifier];
 }
 
+- (id<ORKTask>)makeColorScalesTask {
+    ORKOrderedTask *task = (ORKOrderedTask *)[self makeScalesTask];
+    
+    for (ORKQuestionStep *step in task.steps) {
+        if ([step isKindOfClass:[ORKQuestionStep class]]) {
+            ORKAnswerFormat *answerFormat  = step.answerFormat;
+            if ([answerFormat respondsToSelector:@selector(setGradientColors:)]) {
+                [answerFormat performSelector:@selector(setGradientColors:) withObject:@[[UIColor redColor],
+                                                                                         [UIColor greenColor],
+                                                                                         [UIColor greenColor],
+                                                                                         [UIColor yellowColor],
+                                                                                         [UIColor yellowColor]]];
+                [answerFormat performSelector:@selector(setGradientLocations:) withObject:@[@0.2, @0.2, @0.7, @0.7, @0.8]];
+            }
+        }
+    }
+    
+    return task;
+}
+
+- (void)scaleColorGradientButtonTapped:(id)sender {
+    [self beginTaskWithIdentifier:ColorScalesTaskIdentifier];
+}
+
 #pragma mark - Image choice task
 
 /*
@@ -3153,10 +3204,12 @@ static const CGFloat HeaderSideLayoutMargin = 16.0;
     ORKQuestionStep *step12 = [ORKQuestionStep questionStepWithIdentifier:@"step12" title:@"What is your e-mail address?" answer:[ORKAnswerFormat emailAnswerFormat]];
     // ORKTimeIntervalAnswerFormat
     ORKQuestionStep *step13 = [ORKQuestionStep questionStepWithIdentifier:@"step13" title:@"How many hours did you sleep last night?" answer:[ORKAnswerFormat timeIntervalAnswerFormat]];
+    // ORKHeightAnswerFormat
+    ORKQuestionStep *step14 = [ORKQuestionStep questionStepWithIdentifier:@"step14" title:@"What is your height?" answer:[ORKAnswerFormat heightAnswerFormat]];
     // ORKLocationAnswerFormat
-    ORKQuestionStep *step14 = [ORKQuestionStep questionStepWithIdentifier:@"step14" title:@"Where do you live?" answer:[ORKAnswerFormat locationAnswerFormat]];
+    ORKQuestionStep *step15 = [ORKQuestionStep questionStepWithIdentifier:@"step15" title:@"Where do you live?" answer:[ORKAnswerFormat locationAnswerFormat]];
 
-    return @[instructionStep, step1, step2, step3, step4, step5, step6, formStep, reviewStep, step7, step8, step9, step10, step11, step12, step13, step14];
+    return @[instructionStep, step1, step2, step3, step4, step5, step6, formStep, reviewStep, step7, step8, step9, step10, step11, step12, step13, step14, step15];
 }
 
 - (id<ORKTask>)makeEmbeddedReviewTask {
@@ -3349,7 +3402,7 @@ static const CGFloat HeaderSideLayoutMargin = 16.0;
 
     UIGraphicsBeginImageContextWithOptions(view.bounds.size, view.opaque, 0.0);
     [view.layer renderInContext:UIGraphicsGetCurrentContext()];
-    UIImage * image = UIGraphicsGetImageFromCurrentImageContext();
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
 
     return image;
@@ -3375,7 +3428,7 @@ static const CGFloat HeaderSideLayoutMargin = 16.0;
              delete your data when you've processed it or sent it to a server.
              */
             NSError *err = nil;
-            if (! [[NSFileManager defaultManager] removeItemAtURL:outputDirectoryURL error:&err]) {
+            if (![[NSFileManager defaultManager] removeItemAtURL:outputDirectoryURL error:&err]) {
                 NSLog(@"Error removing %@: %@", outputDirectoryURL, err);
             }
         }
@@ -3612,7 +3665,7 @@ stepViewControllerWillAppear:(ORKStepViewController *)stepViewController {
         [_currentDocument makePDFWithCompletionHandler:^(NSData *pdfData, NSError *error) {
             NSLog(@"Created PDF of size %lu (error = %@)", (unsigned long)pdfData.length, error);
             
-            if (! error) {
+            if (!error) {
                 NSURL *documents = [NSURL fileURLWithPath:NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).lastObject];
                 NSURL *outputUrl = [documents URLByAppendingPathComponent:[NSString stringWithFormat:@"%@.pdf", taskViewController.taskRunUUID.UUIDString]];
                 
@@ -3629,7 +3682,7 @@ stepViewControllerWillAppear:(ORKStepViewController *)stepViewController {
         if (dir)
         {
             NSError *err = nil;
-            if (! [[NSFileManager defaultManager] removeItemAtURL:dir error:&err]) {
+            if (![[NSFileManager defaultManager] removeItemAtURL:dir error:&err]) {
                 NSLog(@"Error removing %@: %@", dir, err);
             }
         }
@@ -3776,7 +3829,7 @@ stepViewControllerWillAppear:(ORKStepViewController *)stepViewController {
     // Location question with current location observing off
     ORKQuestionStep *step3 = [[ORKQuestionStep alloc] initWithIdentifier:@"locationTask.step3"];
     step3.title = @"Where is your home?";
-    ORKLocationAnswerFormat* locationAnswerFormat  = [[ORKLocationAnswerFormat alloc] init];
+    ORKLocationAnswerFormat *locationAnswerFormat  = [[ORKLocationAnswerFormat alloc] init];
     locationAnswerFormat.useCurrentLocation= NO;
     step3.answerFormat = locationAnswerFormat;
     [steps addObject:step3];

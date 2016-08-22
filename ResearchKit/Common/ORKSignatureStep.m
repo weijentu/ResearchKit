@@ -28,9 +28,13 @@
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 #import "ORKSignatureStep.h"
+
 #import "ORKSignatureStepViewController.h"
-#import "ORKDefines_Private.h"
+
+#import "ORKHelpers_Internal.h"
+
 
 @implementation ORKSignatureStep
 

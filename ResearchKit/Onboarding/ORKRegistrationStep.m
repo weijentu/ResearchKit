@@ -30,9 +30,10 @@
 
 
 #import "ORKRegistrationStep.h"
-#import "ORKHelpers.h"
-#import "ORKDefines_Private.h"
+
 #import "ORKAnswerFormat_Private.h"
+
+#import "ORKHelpers_Internal.h"
 
 
 NSString *const ORKRegistrationFormItemIdentifierEmail = @"ORKRegistrationFormItemEmail";

@@ -29,10 +29,9 @@
  */
 
 
-#import <Foundation/Foundation.h>
-#import <ResearchKit/ORKAnswerFormat.h>
-#import <ResearchKit/ORKDefines.h>
-#import <CoreLocation/CoreLocation.h>
+@import UIKit;
+@import CoreLocation;
+#import <ResearchKit/ORKTypes.h>
 
 
 NS_ASSUME_NONNULL_BEGIN
@@ -179,6 +178,13 @@ ORK_CLASS_AVAILABLE
  sample.
  */
 @property (nonatomic, assign) NSTimeInterval timestamp;
+
+/**
+ A duration of the tap event.
+ 
+ The duration store time interval between touch down and touch release events.
+ */
+@property (nonatomic, assign) NSTimeInterval duration;
 
 /** 
  An enumerated value that indicates which button was tapped, if any.
@@ -1272,6 +1278,7 @@ ORK_CLASS_AVAILABLE
 ORK_CLASS_AVAILABLE
 @interface ORKLocation : NSObject <NSCopying, NSSecureCoding>
 
++ (instancetype)new NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 
 /**

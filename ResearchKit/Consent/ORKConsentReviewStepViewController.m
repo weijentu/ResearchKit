@@ -30,22 +30,24 @@
 
 
 #import "ORKConsentReviewStepViewController.h"
-#import "ORKConsentReviewStep.h"
+
 #import "ORKConsentReviewController.h"
-#import <ResearchKit/ResearchKit_Private.h>
-#import "ORKStepViewController_Internal.h"
-#import "ORKFormStep.h"
 #import "ORKFormStepViewController.h"
-#import "ORKAnswerFormat.h"
-#import "ORKResult.h"
-#import "ORKHelpers.h"
-#import "ORKConsentDocument_Internal.h"
-#import "ORKAnswerFormat_Internal.h"
-#import "ORKTaskViewController_Internal.h"
-#import "UIBarButtonItem+ORKBarButtonItem.h"
 #import "ORKSignatureStepViewController.h"
+#import "ORKStepViewController_Internal.h"
+#import "ORKTaskViewController_Internal.h"
+
+#import "ORKAnswerFormat_Internal.h"
+#import "ORKConsentDocument_Internal.h"
+#import "ORKConsentReviewStep.h"
 #import "ORKConsentSignature.h"
+#import "ORKFormStep.h"
+#import "ORKResult.h"
+#import "ORKSignatureStep.h"
 #import "ORKStep_Private.h"
+
+#import "ORKHelpers_Internal.h"
+#import "UIBarButtonItem+ORKBarButtonItem.h"
 
 
 typedef NS_ENUM(NSInteger, ORKConsentReviewPhase) {
@@ -233,10 +235,8 @@ static NSString *const _FamilyNameIdentifier = @"family";
 static NSString *const _SignatureStepIdentifier = @"signatureStep";
 
 - (ORKSignatureStepViewController *)makeSignatureViewController {
-    
     ORKSignatureStep *step = [[ORKSignatureStep alloc] initWithIdentifier:_SignatureStepIdentifier];
     step.optional = NO;
-    
     ORKSignatureStepViewController *signatureController = [[ORKSignatureStepViewController alloc] initWithStep:step];
     signatureController.delegate = self;
     return signatureController;
@@ -366,14 +366,14 @@ static NSString *const _SignatureStepIdentifier = @"signatureStep";
     ORKAdjustPageViewControllerNavigationDirectionForRTL(&direction);
     
     _currentPageIndex = page;
-    __weak typeof(self) weakSelf = self;
+    ORKWeakTypeOf(self) weakSelf = self;
     
     //unregister ScrollView to clear hairline
     [self.taskViewController setRegisteredScrollView:nil];
     
     [_pageViewController setViewControllers:@[viewController] direction:direction animated:animated completion:^(BOOL finished) {
         if (finished) {
-            STRONGTYPE(weakSelf) strongSelf = weakSelf;
+            ORKStrongTypeOf(weakSelf) strongSelf = weakSelf;
             [strongSelf updateBackButton];
             
             //register ScrollView to update hairline
@@ -400,16 +400,20 @@ static NSString *const _SignatureStepIdentifier = @"signatureStep";
     } else if ([stepViewController.step.identifier isEqualToString:_SignatureStepIdentifier]) {
         // If this is the signature step then update the image from the signature
         ORKStepResult *result = [stepViewController result];
-        ORKSignatureResult *signatureResult = [result.results firstObject];
-        _signatureImage = signatureResult.signatureImage;
+        [result.results enumerateObjectsUsingBlock:^(ORKResult * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            if ([obj isKindOfClass:[ORKSignatureResult class]]) {
+                _signatureImage = ((ORKSignatureResult *)obj).signatureImage;
+                *stop = YES;
+    }
+        }];
         [self notifyDelegateOnResultChange];
     }
 }
 
 - (void)stepViewControllerDidFail:(ORKStepViewController *)stepViewController withError:(NSError *)error {
-    STRONGTYPE(self.delegate) delegate = self.delegate;
-    if ([delegate respondsToSelector:@selector(stepViewControllerDidFail:withError:)]) {
-        [delegate stepViewControllerDidFail:self withError:error];
+    ORKStrongTypeOf(self.delegate) strongDelegate = self.delegate;
+    if ([strongDelegate respondsToSelector:@selector(stepViewControllerDidFail:withError:)]) {
+        [strongDelegate stepViewControllerDidFail:self withError:error];
     }
 }
 
@@ -425,9 +429,9 @@ static NSString *const _SignatureStepIdentifier = @"signatureStep";
 }
 
 - (void)stepViewController:(ORKStepViewController *)stepViewController recorder:(ORKRecorder *)recorder didFailWithError:(NSError *)error {
-    STRONGTYPE(self.delegate) delegate = self.delegate;
-    if ([delegate respondsToSelector:@selector(stepViewController:recorder:didFailWithError:)]) {
-        [delegate stepViewController:self recorder:recorder didFailWithError:error];
+    ORKStrongTypeOf(self.delegate) strongDelegate = self.delegate;
+    if ([strongDelegate respondsToSelector:@selector(stepViewController:recorder:didFailWithError:)]) {
+        [strongDelegate stepViewController:self recorder:recorder didFailWithError:error];
     }
 }
 
